@@ -8,7 +8,7 @@ namespace lve {
 
 	LveWindow::~LveWindow() {
 		glfwDestroyWindow(window);
-		glfwTerminate;
+		glfwTerminate();
 	}
 	void LveWindow::initWindow() {
 		glfwInit();
