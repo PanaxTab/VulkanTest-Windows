@@ -71,6 +71,19 @@ namespace lve {
 		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 		vertexInputInfo.pVertexBindingDescriptions = nullptr;
 
+
+
+		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
+		colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendInfo.logicOpEnable = VK_FALSE;
+		colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
+		colorBlendInfo.attachmentCount = 1;
+		colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
+		colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
+		colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
+		colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
+		colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
+
 		VkGraphicsPipelineCreateInfo	pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
@@ -80,7 +93,7 @@ namespace lve {
 		pipelineInfo.pViewportState = &configInfo.viewportInfo;
 		pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
 		pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
-		pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
+		pipelineInfo.pColorBlendState = &colorBlendInfo;
 		pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
 
 		pipelineInfo.layout = configInfo.pipelineLayout;
@@ -105,8 +118,8 @@ namespace lve {
 			throw std::runtime_error("failed to create shader module");
 		}
 	};
-	PipelineConfigInfo LvePipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height) {
-		PipelineConfigInfo configInfo{};
+	void LvePipeline::defaultPipelineConfigInfo(
+		PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
 
 		configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -123,6 +136,7 @@ namespace lve {
 		configInfo.scissor.offset = { 0,0 };
 		configInfo.scissor.extent = { width,height };
 
+		
 		configInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.viewportInfo.viewportCount = 1;
 		configInfo.viewportInfo.pViewports = &configInfo.viewport;
@@ -160,16 +174,6 @@ namespace lve {
 		configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
 		configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
 
-		configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
-		configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
-		configInfo.colorBlendInfo.attachmentCount = 1;
-		configInfo.colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
-		configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
-		configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
-		configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
-		configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
-
 		configInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		configInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
 		configInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -181,6 +185,5 @@ namespace lve {
 		configInfo.depthStencilInfo.front = {};  // Optional
 		configInfo.depthStencilInfo.back = {};   // Optional
 
-		return configInfo;
 	};
 }
