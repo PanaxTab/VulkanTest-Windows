@@ -4,6 +4,7 @@
 
 namespace lve {
 	FirstApp::FirstApp() {
+		loadModels();
 		createPipelineLayout();
 		createPipeline();
 		createCommandBuffers();
@@ -20,6 +21,13 @@ namespace lve {
 		}
 		vkDeviceWaitIdle(lveDevice.device());
 	}
+
+	void FirstApp::loadModels() {
+		std::vector<LveModel::vertex>vertices{}; //{{0.0f,-0.5f}},{{0.5f,0.5f}},{{-0.5f,0.5f}}
+		sierpinski(vertices, 5, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.0f, -0.5f });
+		lveModel = std::make_unique<LveModel>(lveDevice, vertices);
+	}
+
 	void FirstApp::createPipelineLayout() {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -79,8 +87,9 @@ namespace lve {
 
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			lvePipeline->bind(commandBuffers[i]);
-			vkCmdDraw(commandBuffers[i], 3, 1, 0, 0); //Draw 3 vertices and only 1 instance
-
+			//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0); //Draw 3 vertices and only 1 instance
+			lveModel->bind(commandBuffers[i]);
+			lveModel->draw(commandBuffers[i]);
 			vkCmdEndRenderPass(commandBuffers[i]);
 			if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
 				throw std::runtime_error("failed to record command buffer!");
@@ -97,6 +106,22 @@ namespace lve {
 		result = lveSwapChain.submitCommandBuffers(&commandBuffers[imageIndex],&imageIndex);
 		if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chaain image!");
+		}
+	};
+
+	void FirstApp::sierpinski(std::vector<LveModel::vertex>& vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top) {
+		if (depth <= 0) {
+			vertices.push_back({ top });
+			vertices.push_back({ right });
+			vertices.push_back({ left });
+		}
+		else {
+			auto leftTop = 0.5f * (left + top);
+			auto rightTop = 0.5f * (right + top);
+			auto leftRight = 0.5f * (left + right);
+			sierpinski(vertices, depth - 1, left, leftRight, leftTop);
+			sierpinski(vertices, depth - 1, leftRight, right, rightTop);
+			sierpinski(vertices, depth - 1, leftTop, rightTop, top);
 		}
 	};
 }
