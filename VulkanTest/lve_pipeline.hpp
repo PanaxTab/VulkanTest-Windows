@@ -32,7 +32,7 @@ namespace lve {
 		~LvePipeline();
 		LvePipeline(const LvePipeline&) = delete;
 		LvePipeline& operator = (const LvePipeline&) = delete;
-
+		LvePipeline() = default;
 		static void defaultPipelineConfigInfo(
 			PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
 		void bind(VkCommandBuffer commandBuffer);
