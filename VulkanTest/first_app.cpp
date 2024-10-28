@@ -1,6 +1,9 @@
 #include "first_app.hpp"
 #include <stdexcept>
 #include <array>
+#include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace lve {
 	FirstApp::FirstApp() {
@@ -23,8 +26,13 @@ namespace lve {
 	}
 
 	void FirstApp::loadModels() {
-		std::vector<LveModel::vertex>vertices{}; //{{0.0f,-0.5f}},{{0.5f,0.5f}},{{-0.5f,0.5f}}
-		sierpinski(vertices, 5, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.0f, -0.5f });
+		std::vector<LveModel::vertex>vertices
+		{
+			{{0.0f,-0.5f},{1.0f,0.0f,0.0f}}, //Top
+			{{0.5f,0.5f},{0.0f,1.0f,0.0f}},	//Right
+			{{-0.5f,0.5f},{0.0f,0.0f,1.0f}} //Left
+		};
+		sierpinski(vertices, 5, vertices[0].position, vertices[1].position, vertices[2].position);
 		lveModel = std::make_unique<LveModel>(lveDevice, vertices);
 	}
 
@@ -35,7 +43,7 @@ namespace lve {
 		pipelineLayoutInfo.pSetLayouts = nullptr;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
-		if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout)!=VK_SUCCESS)
+		if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
@@ -48,7 +56,7 @@ namespace lve {
 			lveSwapChain.height());
 		pipelineConfig.renderPass = lveSwapChain.getRenderPass();
 		pipelineConfig.pipelineLayout = pipelineLayout;
-		lvePipeline = std::make_unique<LvePipeline>(lveDevice,"shaders/simple_shader.vert.spv","shaders/simple_shader.frag.spv",pipelineConfig);
+		lvePipeline = std::make_unique<LvePipeline>(lveDevice, "shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv", pipelineConfig);
 	}
 	void FirstApp::createCommandBuffers() {
 		commandBuffers.resize(lveSwapChain.imageCount());
@@ -81,8 +89,8 @@ namespace lve {
 
 			std::array<VkClearValue, 2> clearValues{};
 			clearValues[0].color = { 0.1f, 0.1f, 0.1f, 0.1f };
-			clearValues[1].depthStencil = { 1.0f, 0};
-			renderPassInfo.clearValueCount= static_cast<uint32_t>(clearValues.size());
+			clearValues[1].depthStencil = { 1.0f, 0 };
+			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
 
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -103,7 +111,7 @@ namespace lve {
 			throw std::runtime_error("failed to aquire swap chain image!");
 		}
 
-		result = lveSwapChain.submitCommandBuffers(&commandBuffers[imageIndex],&imageIndex);
+		result = lveSwapChain.submitCommandBuffers(&commandBuffers[imageIndex], &imageIndex);
 		if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chaain image!");
 		}
@@ -114,8 +122,7 @@ namespace lve {
 			vertices.push_back({ top });
 			vertices.push_back({ right });
 			vertices.push_back({ left });
-		}
-		else {
+		} else {
 			auto leftTop = 0.5f * (left + top);
 			auto rightTop = 0.5f * (right + top);
 			auto leftRight = 0.5f * (left + right);
