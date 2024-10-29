@@ -1,6 +1,6 @@
 #include "lve_model.hpp"
 #include <cassert>
-
+#include <memory.h>
 namespace lve {
 	LveModel::LveModel(LveDevice &device, const std::vector<vertex> &vertices) :lveDevice{device} {
 		createVertexBuffers(vertices);

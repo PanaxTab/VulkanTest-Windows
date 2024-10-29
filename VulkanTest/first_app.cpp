@@ -26,9 +26,9 @@ namespace lve {
 	void FirstApp::loadModels() {
 		std::vector<LveModel::vertex>vertices
 		{
-			{{0.0f,-0.5f},{1.0f,0.0f,0.0f}}, //Top
-			{{0.5f,0.5f},{0.0f,1.0f,0.0f}},	//Right
-			{{-0.5f,0.5f},{0.0f,0.0f,1.0f}} //Left
+			{{0.0f,-0.5f},{0.0f,1.0f,0.0f}}, //Top
+			{{0.5f,0.5f},{0.0f,0.0f,1.0f}},	//Right
+			{{-0.5f,0.5f},{1.0f,0.0f,0.0f}} //Left
 		};
 		sierpinski(vertices, 5, vertices[0].position, vertices[1].position, vertices[2].position);
 		lveModel = std::make_unique<LveModel>(lveDevice, vertices);
@@ -46,16 +46,6 @@ namespace lve {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
-	void FirstApp::createPipeline() {
-		PipelineConfigInfo pipelineConfig{};
-		LvePipeline::defaultPipelineConfigInfo(
-			pipelineConfig,
-			lveSwapChain->width(),
-			lveSwapChain->height());
-		pipelineConfig.renderPass = lveSwapChain->getRenderPass();
-		pipelineConfig.pipelineLayout = pipelineLayout;
-		lvePipeline = std::make_unique<LvePipeline>(lveDevice, "shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv", pipelineConfig);
-	}
 
 	void FirstApp::recreateSwapChain() {
 		auto extent = lveWindow.getExtent();
@@ -66,9 +56,31 @@ namespace lve {
 
 		vkDeviceWaitIdle(lveDevice.device());
 		lveSwapChain = nullptr;
-		lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, extent);
+		if (lveSwapChain == nullptr) {
+			lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, extent);
+		} else {
+			lveSwapChain = std::make_unique<LveSwapChain>(lveDevice,extent, std::move(lveSwapChain));
+			if (lveSwapChain->imageCount() != commandBuffers.size()) {
+				freeCommandBuffers();
+				createCommandBuffers();
+			}
+		}
+
+		
 		createPipeline();
 	}
+
+	void FirstApp::createPipeline() {
+		assert(lveSwapChain != nullptr && "Cannot create pipeline before swap chain");
+		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
+
+		PipelineConfigInfo pipelineConfig{};
+		LvePipeline::defaultPipelineConfigInfo(pipelineConfig);
+		pipelineConfig.renderPass = lveSwapChain->getRenderPass();
+		pipelineConfig.pipelineLayout = pipelineLayout;
+		lvePipeline = std::make_unique<LvePipeline>(lveDevice, "shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv", pipelineConfig);
+	}
+
 
 	void FirstApp::createCommandBuffers() {
 		commandBuffers.resize(lveSwapChain->imageCount());
@@ -83,6 +95,11 @@ namespace lve {
 			throw std::runtime_error("failed to allocate command buffers!");
 		}
 	};
+
+	void FirstApp::freeCommandBuffers() {
+		vkFreeCommandBuffers(lveDevice.device(), lveDevice.getCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+		commandBuffers.clear();
+	}
 
 	void FirstApp::recordCommandBuffer(int imageIndex) {
 		VkCommandBufferBeginInfo beginInfo{};
@@ -107,6 +124,18 @@ namespace lve {
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(lveSwapChain->getSwapChainExtent().width);
+		viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 0.0f;
+		VkRect2D scissor{ {0,0}, lveSwapChain->getSwapChainExtent() };
+		vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
+		
 		lvePipeline->bind(commandBuffers[imageIndex]);
 		//vkCmdDraw(commandBuffers[i], 3, 1, 0, 0); //Draw 3 vertices and only 1 instance
 		lveModel->bind(commandBuffers[imageIndex]);
