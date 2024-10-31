@@ -23,7 +23,7 @@ namespace lve {
 	}
 
 	LveSimpleRenderSystem::~LveSimpleRenderSystem() {
-		//vkDestroyPipeline(lveDevice.device(), pipelineLayout, nullptr);
+		vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
 	}
 
 
