@@ -38,7 +38,7 @@ namespace lve {
 	}
 
 	void LveRenderer::createCommandBuffers() {
-		commandBuffers.resize(lveSwapChain->imageCount());
+		commandBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -82,22 +82,23 @@ namespace lve {
 
 
 	void LveRenderer::endFrame() {
-		assert(isFrameStarted && "Can't call endFrame while frame is already started");
+		assert(isFrameStarted && "Can't call endFrame while frame is not in progress");
 		auto commandBuffer = getCurrentCommandBuffer();
-		vkCmdEndRenderPass(commandBuffer);
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
-		};
-		auto result = lveSwapChain->acquireNextImage(&currentImageIndex);
-		result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || lveWindow.wasWindowResized()) {
+		}
+		auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+			lveWindow.wasWindowResized()) {
 			lveWindow.resetWindowResizedFlag();
 			recreateSwapChain();
 		}
-		if (result != VK_SUCCESS) {
-			throw std::runtime_error("failed to present swap chaain image!");
+		else if (result != VK_SUCCESS) {
+			throw std::runtime_error("failed to present swap chain image!");
 		}
+
 		isFrameStarted = false;
+		currentframeIndex = (currentframeIndex + 1) % LveSwapChain::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void LveRenderer::begiSwapChainRenderPass(VkCommandBuffer commandBuffer) {

@@ -24,7 +24,7 @@ namespace lve {
 	}
 
 	FirstApp::~FirstApp() {
-		vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
+		//vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
 	}
 
 	void FirstApp::run() {

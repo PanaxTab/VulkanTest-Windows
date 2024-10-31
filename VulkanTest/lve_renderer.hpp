@@ -24,7 +24,11 @@ namespace lve {
 		bool isFrameInProgress() const { return isFrameStarted; };
 		VkCommandBuffer getCurrentCommandBuffer() const {
 			assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
-			return commandBuffers[currentImageIndex];
+			return commandBuffers[currentframeIndex];
+		}
+		int getFrameIndex() const {
+			assert(isFrameStarted && "Cannot get frame index when frame not in progress");
+			return currentframeIndex;
 		}
 
 		VkCommandBuffer beginFrame();
@@ -34,6 +38,7 @@ namespace lve {
 
 	private:
 		uint32_t currentImageIndex;
+		int currentframeIndex;
 		bool isFrameStarted;
 		void createCommandBuffers();
 		void freeCommandBuffers();
