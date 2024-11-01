@@ -36,7 +36,7 @@ namespace lve {
 		//void recordCommandBuffer(int imageIndex);
 		void renderGameObjects(VkCommandBuffer commandBuffer);
 		
-		void sierpinski(std::vector<LveModel::vertex> &vertices,int depth,glm::vec2 left, glm::vec2 right,glm::vec2 top); //sierpinski exercise
+		//void sierpinski(std::vector<LveModel::vertex> &vertices,int depth,glm::vec2 left, glm::vec2 right,glm::vec2 top); //sierpinski exercise
 		LveWindow lveWindow{WIDTH,HEIGHT,"Hello Vulkan!" };
 		LveDevice lveDevice{lveWindow};
 		LveRenderer lveRenderer{ lveWindow,lveDevice };
