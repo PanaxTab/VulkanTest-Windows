@@ -8,17 +8,17 @@ namespace lve {
 	class LveCamera
 	{
 	public:
-		LveCamera(LveCamera& lveCamera);
-		~LveCamera();
-
-		LveCamera(const LveCamera&) = delete;
-		LveCamera& operator=(const LveCamera&) = delete;
+		//LveCamera(LveCamera& lveCamera);
+		//~LveCamera();
+		//
+		//LveCamera(const LveCamera&) = delete;
+		//LveCamera& operator=(const LveCamera&) = delete;
 		
-		void setOrthoProjection(float left,float right,float top, float bottom, float near, float far);
+		void setOrthographicProjection(float left,float right,float top, float bottom, float near, float far);
 		void setPerspectiveProjection(float fovy, float aspect, float near, float far);
 		const glm::mat4& getProjectionMatrix() const { return projectionMatrix; };
 	private:
 		glm::mat4 projectionMatrix{1.f};
-		LveCamera& lveCamera;
+		//LveCamera& lveCamera;
 	};
 }

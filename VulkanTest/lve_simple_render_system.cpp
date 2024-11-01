@@ -56,7 +56,11 @@ namespace lve {
 			"shaders/simple_shader.frag.spv",
 			pipelineConfig);
 	}
-	void LveSimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer,std::vector<LveGameObject> &gameObjects) {
+	void LveSimpleRenderSystem::renderGameObjects(
+		VkCommandBuffer commandBuffer, 
+		std::vector<LveGameObject>& gameObjects, 
+		const LveCamera& camera)
+	{
 		lvePipeline->bind(commandBuffer);
 
 		for (auto& obj : gameObjects) {
@@ -65,7 +69,7 @@ namespace lve {
 
 			SimplePushData push{};
 			push.color = obj.color;
-			push.transform = obj.transform.mat4();
+			push.transform = camera.getProjectionMatrix() * obj.transform.mat4();
 
 			vkCmdPushConstants(
 				commandBuffer,
