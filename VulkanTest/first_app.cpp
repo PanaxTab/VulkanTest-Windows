@@ -30,11 +30,13 @@ namespace lve {
 	void FirstApp::run() {
 		LveSimpleRenderSystem simpleRenderSystem{ lveDevice,lveRenderer.getSwapChainRenderPass() };
 		LveCamera camera{};
+		//camera.setViewDirection(glm::vec3 (0.f), glm::vec3(0.5f,0.f,1.f));// Cube appears on the left cause we look to the right
+		//camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f)); // Cube appears centered
 		while (!lveWindow.shouldClose()) {
 			glfwPollEvents();
 			float aspect = lveRenderer.getAspectRatio();
 			//camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-			camera.setPerspectiveProjection(glm::radians(50.f), aspect,.1f,10.f);
+			camera.setPerspectiveProjection(glm::radians(50.f), aspect,.1f,10.f); // Controls how far we can see with near and far
 			//drawFrame();
 			if (auto commandBuffer = lveRenderer.beginFrame()) {
 				// begin offscreen shadow pass
