@@ -107,7 +107,7 @@ namespace lve {
 		lvePipeline->bind(commandBuffer);
 
 		for (auto& obj : gameObjects) {
-
+			obj.Transform2D.rotation = glm::mod(obj.Transform2D.rotation + 0.01f, glm::two_over_pi<float>());
 			SimplePushData push{};
 			push.offset = obj.Transform2D.translation;
 			push.color = obj.color;
