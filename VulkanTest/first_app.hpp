@@ -6,6 +6,7 @@
 #include "lve_renderer.hpp"
 #include "lve_model.hpp"
 #include "lve_game_object.hpp"
+#include "keyboard_input_controller.hpp"
 // std
 #include <memory>
 #include <vector>
