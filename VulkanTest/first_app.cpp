@@ -126,7 +126,7 @@ namespace lve {
 
 
 	void FirstApp::loadGameObjects() {
-		std::shared_ptr<LveModel> lveModel = createCubeModel(lveDevice, { .0f,.0f,.0f });
+		std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(lveDevice, "models/colored_cube.obj"); //createCubeModel(lveDevice, { .0f,.0f,.0f });
 
 		auto cube = LveGameObject::createGameObject();
 		cube.model = lveModel;
