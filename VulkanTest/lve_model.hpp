@@ -4,6 +4,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -18,6 +19,10 @@ namespace lve {
 
 				static std::vector<VkVertexInputBindingDescription>getBindingDescriptions();
 				static std::vector<VkVertexInputAttributeDescription>getAttributeDescriptions();
+
+				bool operator==(const vertex& other)const {
+					return position == other.position && color == other.color && normal == other.normal && UV == other.UV;
+				};
 			};
 			//Temporary helper object
 			struct builder {

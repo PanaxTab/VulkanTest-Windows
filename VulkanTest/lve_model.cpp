@@ -1,11 +1,27 @@
 #include "lve_model.hpp"
-
+#include "lve_utils.hpp"
 //libs
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
 #include <iostream>
 #include <cassert>
 #include <memory.h>
+#include <unordered_map>
+
+namespace std {
+	template<>
+	struct hash<lve::LveModel::vertex> {
+		size_t operator()(lve::LveModel::vertex const& vertex)const {
+			size_t seed = 0;
+			lve::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.UV);
+			return seed;
+		}
+	};
+}
+
 namespace lve {
 	LveModel::LveModel(LveDevice &device, const LveModel::builder &builder) :lveDevice{device} {
 		createVertexBuffers(builder.vertices);
@@ -142,6 +158,7 @@ namespace lve {
 		vertices.clear();
 		indices.clear();
 
+		std::unordered_map<vertex, uint32_t>unique_vertices{};
 		for (const auto& shapes : shapes) {
 			for (const auto& index : shapes.mesh.indices) {
 				vertex vertex{};
@@ -175,7 +192,11 @@ namespace lve {
 					};
 				}
 
-				vertices.push_back(vertex);
+				if (unique_vertices.count(vertex) == 0) {
+					unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+				indices.push_back(unique_vertices[vertex]);
 			}
 		}
 	}
