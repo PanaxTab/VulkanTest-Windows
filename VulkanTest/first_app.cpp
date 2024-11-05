@@ -31,7 +31,7 @@ namespace lve {
 	void FirstApp::run() {
 		LveSimpleRenderSystem simpleRenderSystem{ lveDevice,lveRenderer.getSwapChainRenderPass() };
 		LveCamera camera{};
-		camera.setViewDirection(glm::vec3 (0.f), glm::vec3(0.5f,0.f,1.f));// Cube appears on the left cause we look to the right
+		//camera.setViewDirection(glm::vec3 (0.f), glm::vec3(0.5f,0.f,1.f));// Cube appears on the left cause we look to the right
 		//camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f)); // Cube appears centered
 
 		auto viewerObject = LveGameObject::createGameObject();
