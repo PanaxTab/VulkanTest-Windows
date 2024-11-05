@@ -13,7 +13,7 @@
 namespace lve {
 	struct SimplePushData {
 		glm::mat4 transform{ 1.f };
-		alignas(16) glm::vec3 color;
+		glm::mat4 normalMatrix{ 1.f };
 	};
 
 	LveSimpleRenderSystem::LveSimpleRenderSystem(LveDevice& device, VkRenderPass renderPass) : lveDevice{ device }{
@@ -67,11 +67,13 @@ namespace lve {
 
 		for (auto& obj : gameObjects) {
 			obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.01f, glm::two_pi<float>());
-			obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.005f, glm::two_pi<float>());
+			//obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.005f, glm::two_pi<float>());
 
 			SimplePushData push{};
-			push.color = obj.color;
-			push.transform = projectionView * obj.transform.mat4();
+			//push.color = obj.color;
+			auto modelMatrix = obj.transform.mat4();
+			push.transform = projectionView * modelMatrix; //This controls the camera motion, have to change that
+			push.normalMatrix = obj.transform.normalMatrix();
 
 			vkCmdPushConstants(
 				commandBuffer,
