@@ -57,13 +57,13 @@ namespace lve {
 			pipelineConfig);
 	}
 	void LveSimpleRenderSystem::renderGameObjects(
-		VkCommandBuffer commandBuffer, 
-		std::vector<LveGameObject>& gameObjects, 
-		const LveCamera& camera)
+			FrameInfo& frameInfo, 
+			std::vector<LveGameObject>& gameObjects
+		)
 	{
-		lvePipeline->bind(commandBuffer);
+		lvePipeline->bind(frameInfo.commandBuffer);
 
-		auto projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
+		auto projectionView = frameInfo.camera.getProjectionMatrix() * frameInfo.camera.getViewMatrix();
 
 		for (auto& obj : gameObjects) {
 			obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.01f, glm::two_pi<float>());
@@ -76,13 +76,13 @@ namespace lve {
 			push.normalMatrix = obj.transform.normalMatrix();
 
 			vkCmdPushConstants(
-				commandBuffer,
+				frameInfo.commandBuffer,
 				pipelineLayout,
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
 				sizeof(SimplePushData),
 				&push);
-			obj.model->bind(commandBuffer);
-			obj.model->draw(commandBuffer);
+			obj.model->bind(frameInfo.commandBuffer);
+			obj.model->draw(frameInfo.commandBuffer);
 		}
 	};
 }
