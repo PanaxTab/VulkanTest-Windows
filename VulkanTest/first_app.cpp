@@ -36,16 +36,17 @@ namespace lve {
 	FirstApp::~FirstApp() {}//vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
 
 	void FirstApp::run() {
-		LveBuffer globalUboBuffer{
-			lveDevice,
-			sizeof(GlobalUbo),
-			LveSwapChain::MAX_FRAMES_IN_FLIGHT,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-			lveDevice.properties.limits.minUniformBufferOffsetAlignment,
-
-		};
-		globalUboBuffer.map();
+		std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < uboBuffers.size(); i++) {
+			uboBuffers[i] = std::make_unique<LveBuffer>(
+				lveDevice,
+				sizeof(GlobalUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+			uboBuffers[i]->map();
+		}
 		LveSimpleRenderSystem simpleRenderSystem{ lveDevice,lveRenderer.getSwapChainRenderPass() };
 		LveCamera camera{};
 		//camera.setViewDirection(glm::vec3 (0.f), glm::vec3(0.5f,0.f,1.f));// Cube appears on the left cause we look to the right
@@ -78,8 +79,8 @@ namespace lve {
 				//update
 				GlobalUbo ubo{};
 				ubo.projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
-				globalUboBuffer.writeToIndex(&ubo,frameIndex);
-				globalUboBuffer.flushIndex(frameIndex);
+				uboBuffers[frameIndex]->writeToBuffer(&ubo);
+				uboBuffers[frameIndex]->flush();
 				// begin offscreen shadow pass
 				// render shadow casting objects
 				// end offscreen shadow pass
