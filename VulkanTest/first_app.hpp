@@ -7,6 +7,7 @@
 #include "lve_model.hpp"
 #include "lve_game_object.hpp"
 #include "keyboard_input_controller.hpp"
+#include "lve_descriptors.hpp"
 // std
 #include <memory>
 #include <vector>
@@ -45,6 +46,7 @@ namespace lve {
 		std::unique_ptr<LvePipeline> lvePipeline;
 		VkPipelineLayout pipelineLayout;
 		//std::vector<VkCommandBuffer> commandBuffers;
+		std::unique_ptr<LveDescriptorPool> globalPool{};
 		std::vector<LveGameObject> gameObjects;
 	};
 }	

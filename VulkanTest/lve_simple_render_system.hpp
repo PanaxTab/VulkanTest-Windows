@@ -13,14 +13,14 @@ namespace lve {
 	class LveSimpleRenderSystem
 	{
 	public:
-		LveSimpleRenderSystem(LveDevice& device	,VkRenderPass renderPass);
+		LveSimpleRenderSystem(LveDevice& device	,VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 		~LveSimpleRenderSystem();
 
 		LveSimpleRenderSystem(const LveWindow&) = delete;
 		LveSimpleRenderSystem& operator=(const LveWindow&) = delete;
 		void renderGameObjects(FrameInfo &frameInfo,std::vector<LveGameObject> &gameObjects);
 	private:
-		void createPipelineLayout();
+		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 		LveDevice& lveDevice;
 		std::unique_ptr<LvePipeline> lvePipeline;

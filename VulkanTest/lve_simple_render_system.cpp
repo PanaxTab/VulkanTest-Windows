@@ -12,12 +12,12 @@
 
 namespace lve {
 	struct SimplePushData {
-		glm::mat4 transform{ 1.f };
+		glm::mat4 moddelMatrix{ 1.f };
 		glm::mat4 normalMatrix{ 1.f };
 	};
 
-	LveSimpleRenderSystem::LveSimpleRenderSystem(LveDevice& device, VkRenderPass renderPass) : lveDevice{ device }{
-		createPipelineLayout();
+	LveSimpleRenderSystem::LveSimpleRenderSystem(LveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : lveDevice{ device }{
+		createPipelineLayout(globalSetLayout);
 		createPipeline(renderPass);
 	}
 
@@ -26,16 +26,18 @@ namespace lve {
 	}
 
 
-	void LveSimpleRenderSystem::createPipelineLayout() {
+	void LveSimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushData);
 
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ globalSetLayout };
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 		if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
@@ -63,7 +65,18 @@ namespace lve {
 	{
 		lvePipeline->bind(frameInfo.commandBuffer);
 
-		auto projectionView = frameInfo.camera.getProjectionMatrix() * frameInfo.camera.getViewMatrix();
+		//auto projectionView = frameInfo.camera.getProjectionMatrix() * frameInfo.camera.getViewMatrix();
+
+		vkCmdBindDescriptorSets(
+			frameInfo.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout,
+			0,
+			1,
+			&frameInfo.globalDescriptorSet,
+			0,
+			nullptr
+		);
 
 		for (auto& obj : gameObjects) {
 			obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.01f, glm::two_pi<float>());
@@ -72,7 +85,7 @@ namespace lve {
 			SimplePushData push{};
 			//push.color = obj.color;
 			auto modelMatrix = obj.transform.mat4();
-			push.transform = projectionView * modelMatrix; //This controls the camera motion, have to change that
+			//push.transform = projectionView * modelMatrix; //This controls the camera motion, have to change that
 			push.normalMatrix = obj.transform.normalMatrix();
 
 			vkCmdPushConstants(
